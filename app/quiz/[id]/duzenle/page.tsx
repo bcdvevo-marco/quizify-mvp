@@ -178,29 +178,53 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           </div>
 
           <div className="flex-1 overflow-y-auto qf-scroll p-3 space-y-2">
-            {questions.map((q, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveIdx(i)}
-                className="w-full flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-all"
-                style={{
-                  background: activeIdx === i ? '#eef2ff' : 'transparent',
-                  border: activeIdx === i ? '1.5px solid #c7d2fe' : '1.5px solid transparent',
-                }}
-              >
-                <span className="text-xs font-black text-slate-400 mt-0.5 w-4 shrink-0">{i + 1}</span>
-                <span className="flex-1 text-sm text-slate-700 font-medium line-clamp-2">
-                  {q.text || 'Soru metni...'}
-                </span>
-                <button
-                  onClick={e => { e.stopPropagation(); removeQuestion(i) }}
-                  aria-label="Soruyu kaldır"
-                  className="shrink-0 text-slate-300 hover:text-red-400 transition-colors"
+            {questions.map((q, i) => {
+              const isActive = activeIdx === i
+              return (
+                <div
+                  key={i}
+                  onClick={() => setActiveIdx(i)}
+                  className="group relative flex items-start gap-3 pl-4 pr-2 py-3 rounded-xl cursor-pointer transition-all"
+                  style={{
+                    background: isActive ? '#e0e7ff' : '#ffffff',
+                    border: isActive ? '1.5px solid #6366f1' : '1.5px solid #e2e8f0',
+                    boxShadow: isActive ? '0 2px 8px rgba(99,102,241,0.18)' : undefined,
+                  }}
                 >
-                  <Icon name="x" size={14} />
-                </button>
-              </button>
-            ))}
+                  {isActive && (
+                    <span
+                      className="absolute left-0 top-2 bottom-2 w-1 rounded-r-full"
+                      style={{ background: 'linear-gradient(180deg, #6366f1, #7c3aed)' }}
+                    />
+                  )}
+                  <span
+                    className="text-xs font-black mt-0.5 w-5 shrink-0 text-center rounded-md py-0.5"
+                    style={{
+                      background: isActive ? '#6366f1' : '#f1f5f9',
+                      color: isActive ? 'white' : '#64748b',
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span
+                    className="flex-1 text-sm font-medium line-clamp-2"
+                    style={{ color: isActive ? '#0f172a' : '#475569' }}
+                  >
+                    {q.text || <em className="text-slate-400 not-italic">Soru metni…</em>}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={e => { e.stopPropagation(); removeQuestion(i) }}
+                    aria-label={`${i + 1}. soruyu sil`}
+                    disabled={questions.length <= 1}
+                    className="shrink-0 w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-slate-400 disabled:cursor-not-allowed transition-colors"
+                    title={questions.length <= 1 ? 'En az 1 soru olmalı' : 'Soruyu sil'}
+                  >
+                    <Icon name="trash" size={14} />
+                  </button>
+                </div>
+              )
+            })}
           </div>
         </aside>
 
