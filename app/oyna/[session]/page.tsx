@@ -12,6 +12,13 @@ export default function WaitingPage({ params }: { params: Promise<{ session: str
 
   const nickname = typeof window !== 'undefined' ? sessionStorage.getItem('nickname') ?? '' : ''
 
+  // sessionStorage kaybedilince yeniden katılıma yönlendir
+  useEffect(() => {
+    if (!sessionStorage.getItem('player_id')) {
+      router.replace('/katil')
+    }
+  }, [router])
+
   useEffect(() => {
     const playerId = sessionStorage.getItem('player_id')
     if (!playerId) return

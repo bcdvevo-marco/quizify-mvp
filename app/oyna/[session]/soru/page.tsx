@@ -18,6 +18,13 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
   const router = useRouter()
   const { on } = useGameChannel(session)
 
+  // sessionStorage kaybedilince yeniden katılıma yönlendir
+  useEffect(() => {
+    if (!sessionStorage.getItem('player_id')) {
+      router.replace('/katil')
+    }
+  }, [router])
+
   useEffect(() => {
     const playerId = sessionStorage.getItem('player_id')
     if (!playerId) return

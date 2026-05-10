@@ -10,6 +10,7 @@ const PODIUM_ORDER = [1, 0, 2] // 2nd, 1st, 3rd index — visual podium order
 export default function BitisPage({ params }: { params: Promise<{ session: string }> }) {
   const { session } = use(params)
   const [finalRankings, setFinalRankings] = useState<GameEndEvent['final_rankings']>([])
+  const [totalQuestions, setTotalQuestions] = useState(0)
   const router = useRouter()
   const { on } = useGameChannel(session)
   const myNickname = typeof window !== 'undefined' ? sessionStorage.getItem('nickname') : ''
@@ -17,6 +18,7 @@ export default function BitisPage({ params }: { params: Promise<{ session: strin
   useEffect(() => {
     const off = on('GAME_END', (e) => {
       setFinalRankings(e.final_rankings)
+      setTotalQuestions(e.total_questions)
     })
     return off
   }, [on])
@@ -47,6 +49,20 @@ export default function BitisPage({ params }: { params: Promise<{ session: strin
             <p className="text-white/70 text-sm mb-1">#{myResult.rank} Sıra</p>
             <CountUp to={myResult.total_points} className="text-4xl font-black text-white" />
             <p className="text-white/50 text-sm mt-1">toplam puan</p>
+            <div className="flex justify-center gap-6 mt-4 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+              <div className="text-center">
+                <p className="text-green-400 text-xl font-black">{myResult.correct_count}</p>
+                <p className="text-white/40 text-xs">doğru</p>
+              </div>
+              <div className="text-center">
+                <p className="text-white text-xl font-black">{totalQuestions > 0 ? Math.round((myResult.correct_count / totalQuestions) * 100) : 0}%</p>
+                <p className="text-white/40 text-xs">isabet</p>
+              </div>
+              <div className="text-center">
+                <p className="text-indigo-400 text-xl font-black">#{myResult.rank}</p>
+                <p className="text-white/40 text-xs">sıra</p>
+              </div>
+            </div>
           </div>
         )}
 

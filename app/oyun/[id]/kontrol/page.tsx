@@ -1,5 +1,5 @@
 'use client'
-import { use, useState, useEffect } from 'react'
+import { use, useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameChannel } from '@/lib/realtime/useGameChannel'
 import { TimerBar, AnswerShape, ANS_META, Btn, Icon } from '@/components/shared'
@@ -32,11 +32,37 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
   const [timeLeft, setTimeLeft] = useState(0)
   const [startMs, setStartMs] = useState(0)
   const [questionEnded, setQuestionEnded] = useState(false)
+  const autoEndedRef = useRef(false)
   const [answerStats, setAnswerStats] = useState<{ option_id: string; count: number }[]>([])
   const [questionNum, setQuestionNum] = useState(1)
   const [totalQuestions, setTotalQuestions] = useState(0)
   const router = useRouter()
   const { on } = useGameChannel(id)
+
+  // Sayfa yenilenince aktif soruyu DB'den yükle
+  useEffect(() => {
+    fetch(`/api/oyun/${id}/soru-aktif`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.active) return
+        setQuestion({
+          type: 'QUESTION_START',
+          question_id: data.question_id,
+          text: data.text,
+          image_url: data.image_url,
+          options: data.options,
+          time_limit: data.time_limit,
+          start_timestamp: Date.now(), // gerçek başlangıç bilinmiyor, sıfırdan sayar
+          question_number: data.question_number,
+          total_questions: data.total_questions,
+        })
+        setStartMs(Date.now())
+        setTimeLeft(data.time_limit)
+        setQuestionNum(data.question_number)
+        setTotalQuestions(data.total_questions)
+      })
+      .catch(() => {})
+  }, [id])
 
   useEffect(() => {
     const off1 = on('QUESTION_START', (e) => {
@@ -48,6 +74,7 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
       setTimeLeft(e.time_limit)
       setQuestionNum(e.question_number)
       setTotalQuestions(e.total_questions)
+      autoEndedRef.current = false
     })
     const off2 = on('ANSWER_COUNT', (e) => {
       setAnswerCount(e)
@@ -68,10 +95,20 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
       const elapsed = (Date.now() - startMs) / 1000
       const left = Math.max(0, question.time_limit - elapsed)
       setTimeLeft(left)
-      if (left <= 0) clearInterval(interval)
+      if (left <= 0) {
+        clearInterval(interval)
+        if (!autoEndedRef.current) {
+          autoEndedRef.current = true
+          fetch(`/api/oyun/${id}/soru-bitir`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question_id: question.question_id }),
+          })
+        }
+      }
     }, 100)
     return () => clearInterval(interval)
-  }, [question, startMs, questionEnded])
+  }, [question, startMs, questionEnded, id])
 
   async function handleEndQuestion() {
     if (!question) return
@@ -87,8 +124,8 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
     await fetch(`/api/oyun/${id}/soru-basla`, { method: 'POST' })
   }
 
-  async function handleEndGame() {
-    if (!confirm('Oyunu bitirmek istiyor musun?')) return
+  async function handleEndGame(skipConfirm = false) {
+    if (!skipConfirm && !confirm('Oyunu bitirmek istiyor musun?')) return
     await fetch(`/api/oyun/${id}/bitir`, { method: 'POST' })
     router.push(`/oyun/${id}/sonuclar`)
   }
@@ -156,12 +193,18 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
 
               {/* Action buttons */}
               <div className="flex items-center gap-3 mt-auto">
-                <Btn kind="danger" size="md" onClick={handleEndGame} icon="x">
-                  Oyunu Bitir
-                </Btn>
                 {!questionEnded ? (
-                  <Btn kind="outline" size="md" onClick={handleEndQuestion} icon="check">
-                    Soruyu Bitir
+                  <>
+                    <Btn kind="danger" size="md" onClick={handleEndGame} icon="x">
+                      Oyunu Bitir
+                    </Btn>
+                    <Btn kind="outline" size="md" onClick={handleEndQuestion} icon="check">
+                      Soruyu Bitir
+                    </Btn>
+                  </>
+                ) : questionNum === totalQuestions ? (
+                  <Btn kind="success" size="lg" full onClick={() => handleEndGame(true)} icon="trophy">
+                    Oyunu Bitir &amp; Sonuçları Gör
                   </Btn>
                 ) : (
                   <Btn kind="primary" size="md" onClick={handleNextQuestion} iconRight="arrow-r">

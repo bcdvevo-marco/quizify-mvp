@@ -59,7 +59,8 @@ export interface LeaderboardUpdateEvent {
 
 export interface GameEndEvent {
   type: 'GAME_END'
-  final_rankings: { player_id: string; nickname: string; total_points: number; rank: number }[]
+  final_rankings: { player_id: string; nickname: string; total_points: number; rank: number; correct_count: number }[]
+  total_questions: number
   session_id: string
 }
 

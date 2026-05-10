@@ -63,6 +63,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
   await broadcastGameEvent(id, {
     type: 'GAME_END',
     final_rankings: finalRankings,
+    total_questions: totalQuestions ?? 0,
     session_id: id,
   })
 

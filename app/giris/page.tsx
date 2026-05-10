@@ -8,7 +8,7 @@ export default function GirisPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [mode, setMode] = useState<'giris' | 'kayit'>('giris')
+  const [mode, setMode] = useState<'giris' | 'kayit' | 'sifre'>('giris')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
@@ -23,7 +23,7 @@ export default function GirisPage() {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) setError(error.message)
       else router.push('/dashboard')
-    } else {
+    } else if (mode === 'kayit') {
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -31,6 +31,12 @@ export default function GirisPage() {
       })
       if (error) setError(error.message)
       else router.push('/dashboard')
+    } else {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${location.origin}/sifre-sifirla`,
+      })
+      if (error) setError(error.message)
+      else setError('✓ Şifre sıfırlama bağlantısı e-postana gönderildi')
     }
     setLoading(false)
   }
@@ -67,6 +73,12 @@ export default function GirisPage() {
           ))}
         </div>
 
+        {mode === 'sifre' && (
+          <p className="text-slate-500 text-sm text-center mb-4">
+            E-posta adresini gir, şifre sıfırlama bağlantısı gönderelim.
+          </p>
+        )}
+
         {error && (
           <div
             className="flex items-center gap-2 rounded-xl p-3 mb-4 text-sm"
@@ -95,17 +107,37 @@ export default function GirisPage() {
             className="w-full border-2 border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-colors text-sm font-medium"
             required
           />
-          <input
-            type="password"
-            placeholder="Şifre"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            className="w-full border-2 border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-colors text-sm font-medium"
-            required
-          />
+          {mode !== 'sifre' && (
+            <input
+              type="password"
+              placeholder="Şifre"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              className="w-full border-2 border-slate-200 rounded-xl px-4 py-3.5 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-400 transition-colors text-sm font-medium"
+              required
+            />
+          )}
           <Btn type="submit" kind="primary" size="lg" full loading={loading}>
-            {mode === 'giris' ? 'Giriş Yap' : 'Hesap Oluştur'}
+            {mode === 'giris' ? 'Giriş Yap' : mode === 'kayit' ? 'Hesap Oluştur' : 'Bağlantı Gönder'}
           </Btn>
+          {mode === 'giris' && (
+            <button
+              type="button"
+              onClick={() => { setMode('sifre'); setError(null) }}
+              className="w-full text-center text-indigo-500 text-sm hover:underline"
+            >
+              Şifremi unuttum
+            </button>
+          )}
+          {mode === 'sifre' && (
+            <button
+              type="button"
+              onClick={() => { setMode('giris'); setError(null) }}
+              className="w-full text-center text-slate-400 text-sm hover:underline"
+            >
+              ← Giriş yap
+            </button>
+          )}
         </form>
 
         {/* Divider */}
