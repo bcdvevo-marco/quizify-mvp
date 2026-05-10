@@ -142,21 +142,33 @@
 
 ---
 
-## FAZ 5 — Deploy ❌
+## FAZ 5 — Deploy ⚠️
 
-### Vercel
-- [ ] Vercel'e bağlandı
-- [ ] Environment variables eklendi
-- [ ] `npm run build` sıfır hata
+### Vercel (kod hazırlığı)
+- [x] `vercel.json` eklendi (AI endpoint için 60s timeout)
+- [x] `README.md` deploy talimatları ile yenilendi
+- [x] `npm run build` sıfır hata (31 route, build output temiz)
+- [ ] Vercel'e bağlandı *(kullanıcı aksiyonu)*
+- [ ] Environment variables eklendi *(kullanıcı aksiyonu)*
 
 ### Supabase Production
-- [ ] Production proje (dev'den ayrı)
-- [ ] RLS politikaları test edildi
-- [ ] Auth → Site URL + Redirect URL'ler güncellendi
+- [x] `002_security_perf_hardening.sql` migration uygulandı
+  - `handle_new_user`: search_path locked, EXECUTE revoked
+  - INSERT politikalarına state checkleri eklendi (lobby/active)
+  - `auth.uid()` → `(select auth.uid())` performans
+  - 13 foreign key index eklendi
+- [x] `quiz-images` bucket SELECT policy daraltıldı (LIST kapatıldı)
+- [ ] Production proje (dev'den ayrı) *(kullanıcı kararı — MVP için dev kullanılabilir)*
+- [ ] Auth → Site URL + Redirect URL'ler *(kullanıcı aksiyonu)*
+- [ ] Auth → Leaked Password Protection: enable *(kullanıcı dashboard)*
 
 ### Güvenlik
-- [ ] API rate limiting — `/api/oyuncu/katil` spam koruması
-- [ ] Lighthouse skoru: Performance ≥ 80, Accessibility ≥ 90
+- [x] API rate limiting — `lib/rateLimit.ts` (in-memory IP tabanlı)
+  - `/api/oyuncu/katil`: 10/dk
+  - `/api/katil/[pin]`: 30/dk
+  - `/api/quiz/ai-uret`: 5/dk
+- [x] Supabase advisor: 8 → 1 security warning (kalan: leaked_password_protection)
+- [ ] Lighthouse skoru: Performance ≥ 80, Accessibility ≥ 90 *(deploy sonrası)*
 
 ---
 
@@ -169,7 +181,7 @@
 | Faz 2 — Live Game Skeleton | ✅ | Tamamlandı |
 | Faz 3 — Question Lifecycle | ✅ | Tamamlandı |
 | Faz 4 — Polish + Edge Cases | ✅ | Tamamlandı |
-| Faz 5 — Deploy | ❌ | Başlanmadı |
+| Faz 5 — Deploy | ⚠️ | Kod tarafı hazır, Vercel + Supabase config kullanıcı aksiyonu |
 
 ---
 

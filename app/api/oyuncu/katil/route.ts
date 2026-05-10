@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { broadcastGameEvent } from '@/lib/realtime/serverBroadcast'
+import { rateLimit } from '@/lib/rateLimit'
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, { windowMs: 60_000, max: 10, prefix: 'oyuncu-katil' })
+  if (limited) return limited
+
   const { game_session_id, nickname, team_id } = await request.json()
   const supabase = await createClient()
 
