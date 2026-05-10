@@ -1,6 +1,7 @@
 'use client'
 import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import QRCode from 'qrcode'
 import { useGameChannel } from '@/lib/realtime/useGameChannel'
 import { Avatar, Btn, Icon, QuizifyLockup } from '@/components/shared'
 
@@ -12,33 +13,27 @@ interface SessionInfo {
   players: { id: string; nickname: string }[]
 }
 
-function PseudoQR({ value: _value }: { value: string }) {
-  const cells = Array.from({ length: 21 * 21 }, (_, i) => {
-    const row = Math.floor(i / 21)
-    const col = i % 21
-    if (row < 7 && col < 7) return true
-    if (row < 7 && col > 13) return true
-    if (row > 13 && col < 7) return true
-    return (i + row * col) % 3 === 0
-  })
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(21, 1fr)',
-        gap: 1,
-        width: 120,
-        height: 120,
-        padding: 8,
-        background: 'white',
-        borderRadius: 12,
-      }}
-    >
-      {cells.map((filled, i) => (
-        <div key={i} style={{ background: filled ? '#0f0c29' : 'transparent', borderRadius: 1 }} />
-      ))}
-    </div>
-  )
+function GameQR({ value }: { value: string }) {
+  const [dataUrl, setDataUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!value) return
+    QRCode.toDataURL(value, {
+      width: 240,
+      margin: 1,
+      color: { dark: '#0f0c29', light: '#ffffff' },
+      errorCorrectionLevel: 'M',
+    })
+      .then(setDataUrl)
+      .catch(() => setDataUrl(null))
+  }, [value])
+
+  if (!dataUrl) {
+    return <div style={{ width: 120, height: 120, background: 'white', borderRadius: 12 }} />
+  }
+
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={dataUrl} alt="Oyuna katılım QR kodu" style={{ width: 120, height: 120, borderRadius: 12, background: 'white' }} />
 }
 
 export default function LobiPage({ params }: { params: Promise<{ id: string }> }) {
@@ -84,6 +79,10 @@ export default function LobiPage({ params }: { params: Promise<{ id: string }> }
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  const joinUrl = typeof window !== 'undefined' && session?.pin
+    ? `${window.location.origin}/katil/${session.pin}`
+    : ''
 
   return (
     <div className="min-h-screen flex qf-game-bg">
@@ -145,10 +144,10 @@ export default function LobiPage({ params }: { params: Promise<{ id: string }> }
         className="w-52 flex-none flex flex-col items-center justify-center gap-6 p-6"
         style={{ borderLeft: '1px solid rgba(255,255,255,0.1)' }}
       >
-        <PseudoQR value={session?.pin ?? ''} />
+        <GameQR value={joinUrl} />
         <div className="text-center">
-          <p className="text-white/60 text-xs">quizify.app/katil</p>
-          <p className="text-white/40 text-xs mt-1">veya PIN girin</p>
+          <p className="text-white/60 text-xs">QR kodu tara</p>
+          <p className="text-white/40 text-xs mt-1">veya PIN gir</p>
         </div>
       </aside>
     </div>

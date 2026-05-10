@@ -161,7 +161,7 @@ export default function DashboardPage() {
               <p className="text-slate-800 text-sm font-semibold truncate">{user.name}</p>
               <p className="text-slate-400 text-xs truncate">{user.email}</p>
             </div>
-            <button onClick={handleLogout} className="text-slate-400 hover:text-slate-600 transition-colors">
+            <button onClick={handleLogout} aria-label="Çıkış yap" className="text-slate-400 hover:text-slate-600 transition-colors">
               <Icon name="logout" size={16} />
             </button>
           </div>
@@ -271,6 +271,7 @@ export default function DashboardPage() {
                     <button
                       onClick={() => handleTogglePublish(quiz)}
                       title={quiz.status === 'published' ? 'Taslağa çek' : 'Yayınla'}
+                      aria-label={quiz.status === 'published' ? 'Taslağa çek' : 'Yayınla'}
                       className="p-2 rounded-xl transition-colors"
                       style={{
                         color: quiz.status === 'published' ? '#047857' : '#94a3b8',
@@ -281,12 +282,14 @@ export default function DashboardPage() {
                     </button>
                     <button
                       onClick={() => router.push(`/quiz/${quiz.id}/duzenle`)}
+                      aria-label="Quiz'i düzenle"
                       className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
                     >
                       <Icon name="edit" size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(quiz.id)}
+                      aria-label="Quiz'i sil"
                       className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                     >
                       <Icon name="trash" size={16} />

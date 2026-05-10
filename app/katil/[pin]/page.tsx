@@ -82,7 +82,7 @@ export default function NicknamePage({ params }: { params: Promise<{ pin: string
       style={{ background: 'linear-gradient(160deg, #7c3aed 0%, #6366f1 50%, #4338ca 100%)' }}
     >
       <div className="flex items-center gap-3 w-full max-w-xs">
-        <button onClick={() => router.back()} className="text-white/60 hover:text-white transition-colors">
+        <button onClick={() => router.back()} aria-label="Geri dön" className="text-white/60 hover:text-white transition-colors">
           ←
         </button>
         <QuizifyLockup size={28} dark />

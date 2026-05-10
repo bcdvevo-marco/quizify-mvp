@@ -7,6 +7,13 @@ export async function POST(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json(
+      { error: 'AI özelliği yapılandırılmamış (ANTHROPIC_API_KEY eksik)' },
+      { status: 503 }
+    )
+  }
+
   const { topic, count = 5 } = await request.json()
   if (!topic?.trim()) return NextResponse.json({ error: 'Konu gerekli' }, { status: 400 })
 

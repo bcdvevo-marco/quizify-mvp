@@ -118,13 +118,18 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ topic: aiTopic, count: 5 }),
     })
-    const { questions: generated } = await res.json()
-    const newQuestions: Question[] = generated.map((q: any, i: number) => ({
+    const data = await res.json()
+    if (!res.ok) {
+      toast.show(data.error ?? 'Soru üretilemedi', 'error')
+      setAiLoading(false)
+      return
+    }
+    const newQuestions: Question[] = data.questions.map((q: { text: string; options: { text: string; is_correct: boolean }[] }, i: number) => ({
       text: q.text,
       image_url: null,
       time_limit: 20,
       position: questions.length + i,
-      options: q.options.map((o: any, j: number) => ({ text: o.text, is_correct: o.is_correct, position: j })),
+      options: q.options.map((o, j: number) => ({ text: o.text, is_correct: o.is_correct, position: j })),
     }))
     setQuestions(prev => [...prev, ...newQuestions])
     setActiveIdx(questions.length)
@@ -138,7 +143,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Top bar */}
       <div className="flex items-center gap-4 px-6 py-4 bg-white border-b border-slate-200">
-        <button onClick={() => router.push('/dashboard')} className="text-slate-400 hover:text-slate-700 transition-colors">
+        <button onClick={() => router.push('/dashboard')} aria-label="Dashboard'a dön" className="text-slate-400 hover:text-slate-700 transition-colors">
           <Icon name="arrow-l" size={20} />
         </button>
         <input
@@ -165,6 +170,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
             <span className="text-sm font-bold text-slate-500">Sorular ({questions.length})</span>
             <button
               onClick={addQuestion}
+              aria-label="Yeni soru ekle"
               className="w-7 h-7 rounded-lg flex items-center justify-center text-indigo-600 bg-indigo-50 hover:bg-indigo-100 transition-colors"
             >
               <Icon name="plus" size={14} />
@@ -188,6 +194,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 </span>
                 <button
                   onClick={e => { e.stopPropagation(); removeQuestion(i) }}
+                  aria-label="Soruyu kaldır"
                   className="shrink-0 text-slate-300 hover:text-red-400 transition-colors"
                 >
                   <Icon name="x" size={14} />
@@ -243,6 +250,8 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                           className="shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all"
                           style={{ background: opt.is_correct ? meta.bg : 'transparent', border: `2px solid ${opt.is_correct ? meta.bg : '#cbd5e1'}` }}
                           title="Doğru şık olarak işaretle"
+                          aria-label="Doğru şık olarak işaretle"
+                          aria-pressed={opt.is_correct}
                         >
                           <AnswerShape kind={meta.shape} size={14} color={opt.is_correct ? 'white' : '#94a3b8'} />
                         </button>
@@ -288,7 +297,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
           <div className="bg-white rounded-3xl p-8 w-full max-w-lg">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-black text-slate-900">✨ AI ile Soru Üret</h2>
-              <button onClick={() => setShowAI(false)} className="text-slate-400 hover:text-slate-600">
+              <button onClick={() => setShowAI(false)} aria-label="Modalı kapat" className="text-slate-400 hover:text-slate-600">
                 <Icon name="x" size={20} />
               </button>
             </div>
