@@ -31,7 +31,7 @@
 
 ---
 
-## FAZ 1 — Auth + Quiz CRUD ⚠️
+## FAZ 1 — Auth + Quiz CRUD ✅
 
 ### Kimlik Doğrulama
 - [x] `/giris` — Login/Register toggle sayfası
@@ -40,7 +40,7 @@
 - [x] Auth trigger: `on_auth_user_created` → `public.users`'a kayıt
 - [x] Google OAuth butonu bağlandı (`signInWithOAuth({ provider: 'google' })`)
 - [x] Çıkış sonrası `/` yönlendirmesi (dashboard'da logout butonu)
-- [ ] "Şifremi unuttum" akışı — opsiyonel
+- [x] "Şifremi unuttum" akışı (`resetPasswordForEmail` + geri dön linki)
 
 ### Quiz Editörü
 - [x] `/dashboard` — Quiz listesi, stats grid, filter pill'ları, publish toggle
@@ -50,14 +50,14 @@
 - [x] AI soru üretici modal (konu + count → Claude API)
 - [x] `POST /api/quiz/ai-uret` — Claude `claude-sonnet-4-6` ile Türkçe soru üretimi
 - [x] Quiz yayınlama/taslağa çekme toggle'ı (dashboard kart + API)
-- [x] **En az 1 soru + her soruda 1 doğru şık olmadan oyun başlatılamaz** (`POST /api/oyun` guard)
+- [x] En az 1 soru + her soruda 1 doğru şık olmadan oyun başlatılamaz (`POST /api/oyun` guard)
 - [ ] Görsel yükleme — Supabase Storage (Faz 4'e taşındı)
 - [ ] Soru sürükleme sırası — drag-and-drop (Faz 4'e taşındı)
-- [ ] Kaydetmeden çıkma uyarısı (`useBeforeUnload`) — opsiyonel
+- [ ] Kaydetmeden çıkma uyarısı (`useBeforeUnload`) — Faz 4'e taşındı
 
 ---
 
-## FAZ 2 — Live Game Skeleton ⚠️
+## FAZ 2 — Live Game Skeleton ✅
 
 ### Oyun Oturumu & Lobi
 - [x] `POST /api/oyun` — Benzersiz PIN + slug ile game session oluşturma
@@ -67,48 +67,46 @@
 - [x] `POST /api/oyuncu/ayril` — Oyuncu ayrılma + `PLAYER_LEFT` broadcast
 - [x] `/katil` — PIN giriş ekranı (custom numpad + digit box'lar)
 - [x] `/katil/[pin]` — Takmaadı + takım seçim ekranı
-- [x] `/oyun/[id]/lobi` — Host lobi: 96px PIN, QR, oyuncu grid; **DB'den mevcut oyuncular yükleniyor**
+- [x] `/oyun/[id]/lobi` — Host lobi: 96px PIN, QR, oyuncu grid; DB'den mevcut oyuncular yükleniyor
 - [x] `/oyna/[session]` — Oyuncu bekleme: glassmorphism avatar, player bubble'lar
-- [ ] Oyuncu `sessionStorage`'dan `player_id` kaybedince yeniden katılma akışı — Faz 4
+- [x] Oyuncu `sessionStorage` kaybedince `/katil`'e yönlendirme
 
 ### Realtime Kanal
 - [x] `lib/realtime/useGameChannel.ts` — Supabase Broadcast channel hook
 - [x] `lib/realtime/serverBroadcast.ts` — Server-side REST broadcast
 - [x] Tüm event type'ları dinleniyor
 - [x] `PLAYER_LEFT` broadcast — `beforeunload` + `navigator.sendBeacon`
-- [ ] Channel reconnect — bağlantı kopunca otomatik yeniden bağlanma — Faz 4
+- [x] Channel reconnect — `CHANNEL_ERROR`/`TIMED_OUT` sonrası 3s bekleyip otomatik yeniden bağlanma
 
 ---
 
-## FAZ 3 — Question Lifecycle ⚠️
+## FAZ 3 — Question Lifecycle ✅
 
 ### Soru Akışı (Host)
 - [x] `POST /api/oyun/[id]/basla` — Oyunu başlat + `GAME_STARTED` broadcast
 - [x] `POST /api/oyun/[id]/soru-basla` — Soruyu başlat + `QUESTION_START` broadcast
-- [x] `POST /api/oyun/[id]/soru-bitir` — Soruyu bitir (artık `endQuestion()` lib kullanıyor)
+- [x] `POST /api/oyun/[id]/soru-bitir` — Soruyu bitir (`endQuestion()` lib kullanıyor)
 - [x] `POST /api/oyun/[id]/bitir` — Oyunu bitir + final sıralamaları + `GAME_END` broadcast
 - [x] `lib/game/endQuestion.ts` — Paylaşımlı soru bitirme fonksiyonu (atomik race condition koruması)
 - [x] `/oyun/[id]/kontrol` — Cevap bar chart, ring timer, oyuncu sayısı
-- [ ] Otomatik soru süresi dolunca `soru-bitir` tetikleme — host tarafı timer (Faz 4)
-- [ ] Son soru bittikten sonra "Oyunu Bitir" otomatik prompt
-- [ ] Host kontrol sayfası yenilenince state recovery — Faz 4
+- [x] Otomatik soru süresi dolunca `soru-bitir` tetikleme — host timer (`autoEndedRef` ile tek tetik)
+- [x] Son soru bittikten sonra "Oyunu Bitir & Sonuçları Gör" butonu çıkıyor
+- [x] Host kontrol sayfası yenilenince state recovery (`GET /api/oyun/[id]/soru-aktif`)
 
 ### Soru Akışı (Oyuncu)
 - [x] `/oyna/[session]/soru` — Soru metni, 4 renkli şık, timer bar
 - [x] `POST /api/oyun/[id]/cevap` — Cevap kaydet + puan hesapla + `ANSWER_COUNT` broadcast
-- [x] **Tüm oyuncular cevap verince soru otomatik bitiyor** (cevap route'unda `endQuestion()` tetikleniyor)
+- [x] Tüm oyuncular cevap verince soru otomatik bitiyor (`endQuestion()` tetikleniyor)
 - [x] `lib/scoring/scoring.ts` — Hız bazlı puanlama (500–1000 arası)
-- [x] Float-up puan animasyonu
-- [x] Doğru/yanlış renk geri bildirimi
-- [x] **Bireysel puan** — `QUESTION_END` event'inde `player_points` map ile her oyuncuya kendi puanı
-- [x] **Süre dolunca şıklar kilitleniyor + null submit** otomatik gönderiliyor
+- [x] Float-up puan animasyonu + doğru/yanlış renk geri bildirimi
+- [x] Bireysel puan — `QUESTION_END` event'inde `player_points` map
+- [x] Süre dolunca şıklar kilitleniyor + null submit otomatik gönderiliyor
 
 ### Skor & Sonuç
 - [x] `/oyna/[session]/skor` — Ara sıralama, CountUp animasyonu, geri sayım
-- [x] `/oyna/[session]/bitis` — Konfeti, podium, toplam puan
+- [x] `/oyna/[session]/bitis` — Konfeti, podium, toplam puan + bireysel istatistik (doğru sayısı, isabet%, sıra)
 - [x] `/oyun/[id]/sonuclar` — Host sonuç: podium + tam sıralama tablosu
 - [x] `GET /api/oyun/[id]/export` — CSV indirme (UTF-8 BOM)
-- [ ] `/oyna/[session]/bitis` — Bireysel istatistik: Doğru/Hız/Seri — Faz 4
 
 ---
 
@@ -165,8 +163,8 @@
 | Faz | Durum | Not |
 |-----|-------|-----|
 | Faz 0 — Setup | ✅ | Tamamlandı |
-| Faz 1 — Auth + Quiz CRUD | ⚠️ | Temel akış çalışıyor, görsel upload + drag-drop kaldı |
-| Faz 2 — Live Game Skeleton | ⚠️ | Temel akış çalışıyor, reconnect + yeniden katılım kaldı |
-| Faz 3 — Question Lifecycle | ⚠️ | Temel akış çalışıyor, host timer + son soru prompt kaldı |
+| Faz 1 — Auth + Quiz CRUD | ✅ | Tamamlandı (görsel upload + drag-drop Faz 4'te) |
+| Faz 2 — Live Game Skeleton | ✅ | Tamamlandı |
+| Faz 3 — Question Lifecycle | ✅ | Tamamlandı |
 | Faz 4 — Polish + Edge Cases | ❌ | Başlanmadı |
 | Faz 5 — Deploy | ❌ | Başlanmadı |
