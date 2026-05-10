@@ -142,14 +142,16 @@
 
 ---
 
-## FAZ 5 — Deploy ⚠️
+## FAZ 5 — Deploy ✅
 
-### Vercel (kod hazırlığı)
+### Vercel
 - [x] `vercel.json` eklendi (AI endpoint için 60s timeout)
 - [x] `README.md` deploy talimatları ile yenilendi
 - [x] `npm run build` sıfır hata (31 route, build output temiz)
-- [ ] Vercel'e bağlandı *(kullanıcı aksiyonu)*
-- [ ] Environment variables eklendi *(kullanıcı aksiyonu)*
+- [x] GitHub repo: `bcdvevo-marco/quizify-mvp`
+- [x] Vercel'e bağlandı — production URL: `https://quizify-mvp.vercel.app`
+- [x] Environment variables eklendi (Supabase URL, anon, service role)
+- [ ] `ANTHROPIC_API_KEY` *(deploy sonrası eklenecek)*
 
 ### Supabase Production
 - [x] `002_security_perf_hardening.sql` migration uygulandı
@@ -158,17 +160,28 @@
   - `auth.uid()` → `(select auth.uid())` performans
   - 13 foreign key index eklendi
 - [x] `quiz-images` bucket SELECT policy daraltıldı (LIST kapatıldı)
-- [ ] Production proje (dev'den ayrı) *(kullanıcı kararı — MVP için dev kullanılabilir)*
-- [ ] Auth → Site URL + Redirect URL'ler *(kullanıcı aksiyonu)*
-- [ ] Auth → Leaked Password Protection: enable *(kullanıcı dashboard)*
+- [x] `003_question_started_at.sql` — oyuncu state recovery için
+- [x] `004_cascade_player_answers.sql` — quiz editör duplikasyon fix
+- [x] Auth → Site URL: `https://quizify-mvp.vercel.app`
+- [x] Auth → Redirect URLs eklendi (`/**`, `/sifre-sifirla`, localhost)
+- [ ] Auth → Leaked Password Protection — *Free plan'da kullanılamıyor*
 
 ### Güvenlik
 - [x] API rate limiting — `lib/rateLimit.ts` (in-memory IP tabanlı)
   - `/api/oyuncu/katil`: 10/dk
   - `/api/katil/[pin]`: 30/dk
   - `/api/quiz/ai-uret`: 5/dk
-- [x] Supabase advisor: 8 → 1 security warning (kalan: leaked_password_protection)
+- [x] Supabase advisor: 8 → 1 security warning (kalan: leaked_password_protection Pro plan gerektiriyor)
 - [ ] Lighthouse skoru: Performance ≥ 80, Accessibility ≥ 90 *(deploy sonrası)*
+
+### Production Bug Fixleri (deploy sonrası)
+- [x] **Realtime broadcast topic** — `realtime:` prefix yanlıştı, kaldırıldı (commit `6211d30`)
+- [x] **Oyuncu soru state recovery** — host basla + soru-basla race condition'ı düzeltildi (`d51ba07`)
+- [x] **QUESTION_END feedback timing** — LEADERBOARD_UPDATE 2.5s delay ile, animasyon görünür kalıyor (`b18c657`)
+- [x] **Skor sayfası state recovery** — mount'ta `/api/oyun/[id]/siralama` fetch (`b18c657`)
+- [x] **Bitiş sayfası state recovery + tam liste** — 4+ sıradakiler podyum altında listede (`b18c657`)
+- [x] **Quiz kaydetme duplikasyonu** — `player_answers` FK cascade + delete error handling (`a8e1c37`)
+- [x] **Editör soru listesi** — aktif soru indigo bar/highlight, belirgin trash icon sil butonu (`519fcb5`)
 
 ---
 
@@ -181,7 +194,7 @@
 | Faz 2 — Live Game Skeleton | ✅ | Tamamlandı |
 | Faz 3 — Question Lifecycle | ✅ | Tamamlandı |
 | Faz 4 — Polish + Edge Cases | ✅ | Tamamlandı |
-| Faz 5 — Deploy | ⚠️ | Kod tarafı hazır, Vercel + Supabase config kullanıcı aksiyonu |
+| Faz 5 — Deploy | ✅ | Production'da: https://quizify-mvp.vercel.app |
 
 ---
 
