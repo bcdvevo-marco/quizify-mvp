@@ -4,14 +4,11 @@ import { createClient } from '@/lib/supabase/server'
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Yetkisiz' }, { status: 401 })
 
   const { data: session } = await supabase
     .from('game_sessions')
-    .select('current_question_index, quiz_id, status')
+    .select('current_question_index, current_question_started_at, quiz_id, status')
     .eq('id', id)
-    .eq('host_id', user.id)
     .single()
 
   if (!session) return NextResponse.json({ error: 'Oturum bulunamadı' }, { status: 404 })
@@ -27,6 +24,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
   const question = questions?.[idx]
   if (!question) return NextResponse.json({ active: false })
 
+  const startTimestamp = session.current_question_started_at
+    ? new Date(session.current_question_started_at).getTime()
+    : Date.now()
+
   return NextResponse.json({
     active: true,
     question_id: question.id,
@@ -36,6 +37,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       id: o.id, text: o.text, position: o.position,
     })),
     time_limit: question.time_limit,
+    start_timestamp: startTimestamp,
     question_number: idx + 1,
     total_questions: questions!.length,
   })

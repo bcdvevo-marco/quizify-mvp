@@ -35,6 +35,30 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
     return () => window.removeEventListener('beforeunload', handleUnload)
   }, [session])
 
+  // State recovery: aktif soru varsa direkt yükle (broadcast kaçırılmış olabilir)
+  useEffect(() => {
+    fetch(`/api/oyun/${session}/soru-aktif`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data.active) return
+        setQuestion(prev => prev ?? {
+          type: 'QUESTION_START',
+          question_id: data.question_id,
+          text: data.text,
+          image_url: data.image_url,
+          options: data.options,
+          time_limit: data.time_limit,
+          start_timestamp: data.start_timestamp,
+          question_number: data.question_number,
+          total_questions: data.total_questions,
+        })
+        setStartMs(data.start_timestamp)
+        const elapsed = (Date.now() - data.start_timestamp) / 1000
+        setTimeLeft(Math.max(0, data.time_limit - elapsed))
+      })
+      .catch(() => {})
+  }, [session])
+
   useEffect(() => {
     const off1 = on('QUESTION_START', (e) => {
       setQuestion(e)
