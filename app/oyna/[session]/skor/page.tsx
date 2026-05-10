@@ -13,6 +13,14 @@ export default function SkorPage({ params }: { params: Promise<{ session: string
   const { on } = useGameChannel(session)
   const myNickname = typeof window !== 'undefined' ? sessionStorage.getItem('nickname') : ''
 
+  // Mount'ta fetch — broadcast kaçırıldıysa state recovery
+  useEffect(() => {
+    fetch(`/api/oyun/${session}/siralama`)
+      .then(r => r.json())
+      .then(data => { if (data.rankings) setRankings(data.rankings) })
+      .catch(() => {})
+  }, [session])
+
   useEffect(() => {
     const off1 = on('LEADERBOARD_UPDATE', (e) => {
       setRankings(e.rankings)

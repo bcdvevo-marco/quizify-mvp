@@ -1,5 +1,5 @@
 'use client'
-import { use, useState, useEffect, useCallback } from 'react'
+import { use, useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useGameChannel } from '@/lib/realtime/useGameChannel'
 import { TimerBar, AnswerShape, ANS_META } from '@/components/shared'
@@ -59,6 +59,8 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
       .catch(() => {})
   }, [session])
 
+  const leaderboardTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   useEffect(() => {
     const off1 = on('QUESTION_START', (e) => {
       setQuestion(e)
@@ -81,9 +83,11 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
       }
     })
     const off3 = on('LEADERBOARD_UPDATE', () => {
-      router.push(`/oyna/${session}/skor`)
+      // QUESTION_END feedback + puan animasyonu için 2.5s bekle
+      leaderboardTimerRef.current = setTimeout(() => router.push(`/oyna/${session}/skor`), 2500)
     })
     const off4 = on('GAME_END', () => {
+      if (leaderboardTimerRef.current) clearTimeout(leaderboardTimerRef.current)
       router.push(`/oyna/${session}/bitis`)
     })
     return () => { off1(); off2(); off3(); off4() }

@@ -23,8 +23,28 @@ export default function BitisPage({ params }: { params: Promise<{ session: strin
     return off
   }, [on])
 
+  // Mount'ta fetch — GAME_END broadcast kaçırıldıysa state recovery
+  useEffect(() => {
+    fetch(`/api/oyun/${session}/sonuclar`)
+      .then(r => r.json())
+      .then((data: Array<{ rank: number; total_points: number; correct_count: number; total_questions: number; players: { nickname: string } }>) => {
+        if (!Array.isArray(data) || !data.length) return
+        setFinalRankings(prev => prev.length ? prev : data.map(d => ({
+          player_id: '',
+          nickname: d.players.nickname,
+          team_id: null,
+          total_points: d.total_points,
+          rank: d.rank,
+          correct_count: d.correct_count,
+        })))
+        setTotalQuestions(prev => prev || data[0]?.total_questions || 0)
+      })
+      .catch(() => {})
+  }, [session])
+
   const myResult = finalRankings.find(r => r.nickname === myNickname)
   const top3 = finalRankings.slice(0, 3)
+  const rest = finalRankings.slice(3)
   const podiumHeights = [80, 110, 60] // 2nd, 1st, 3rd
 
   return (
@@ -78,6 +98,7 @@ export default function BitisPage({ params }: { params: Promise<{ session: strin
                 <div key={podiumIdx} className="flex flex-col items-center gap-2 w-24">
                   <Avatar name={player.nickname} size={isFirst ? 52 : 40} />
                   <p className="text-white text-xs font-bold truncate w-full text-center">{player.nickname}</p>
+                  <p className="text-white/70 text-xs tabular-nums">{player.total_points.toLocaleString('tr-TR')}</p>
                   <div
                     className="w-full rounded-t-xl flex items-center justify-center"
                     style={{
@@ -94,6 +115,34 @@ export default function BitisPage({ params }: { params: Promise<{ session: strin
                 </div>
               )
             })}
+          </div>
+        )}
+
+        {/* 4+ sıradakiler */}
+        {rest.length > 0 && (
+          <div className="w-full max-w-xs mb-8">
+            <p className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-2 text-center">Diğer Sıralamalar</p>
+            <div className="space-y-1.5">
+              {rest.map(p => (
+                <div
+                  key={p.nickname + p.rank}
+                  className="flex items-center gap-3 rounded-xl px-3 py-2"
+                  style={{
+                    background: p.nickname === myNickname
+                      ? 'rgba(99,102,241,0.25)'
+                      : 'rgba(255,255,255,0.06)',
+                    border: p.nickname === myNickname
+                      ? '1px solid rgba(99,102,241,0.4)'
+                      : '1px solid rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <span className="text-white/50 text-sm w-6 font-bold">#{p.rank}</span>
+                  <Avatar name={p.nickname} size={28} />
+                  <span className="flex-1 text-white text-sm font-semibold truncate">{p.nickname}</span>
+                  <span className="text-white text-sm font-bold tabular-nums">{p.total_points.toLocaleString('tr-TR')}</span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
