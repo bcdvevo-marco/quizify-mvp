@@ -9,9 +9,10 @@ interface SessionInfo {
   pin: string
   status: string
   quizzes: { title: string }
+  players: { id: string; nickname: string }[]
 }
 
-function PseudoQR({ value }: { value: string }) {
+function PseudoQR({ value: _value }: { value: string }) {
   const cells = Array.from({ length: 21 * 21 }, (_, i) => {
     const row = Math.floor(i / 21)
     const col = i % 21
@@ -51,7 +52,10 @@ export default function LobiPage({ params }: { params: Promise<{ id: string }> }
   useEffect(() => {
     fetch(`/api/oyun/${id}`)
       .then(r => r.json())
-      .then(setSession)
+      .then((data: SessionInfo) => {
+        setSession(data)
+        if (data.players?.length) setPlayers(data.players)
+      })
       .catch(() => {})
   }, [id])
 

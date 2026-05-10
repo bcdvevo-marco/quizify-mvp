@@ -7,7 +7,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
   const { data, error } = await supabase
     .from('game_sessions')
-    .select('id, pin, status, quizzes(title), teams(id, name, color)')
+    .select('id, pin, status, quizzes(title), teams(id, name, color), players(id, nickname, team_id)')
     .eq('id', id)
     .single()
 

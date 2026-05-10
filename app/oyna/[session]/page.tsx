@@ -13,6 +13,16 @@ export default function WaitingPage({ params }: { params: Promise<{ session: str
   const nickname = typeof window !== 'undefined' ? sessionStorage.getItem('nickname') ?? '' : ''
 
   useEffect(() => {
+    const playerId = sessionStorage.getItem('player_id')
+    if (!playerId) return
+    const handleUnload = () => {
+      navigator.sendBeacon(`/api/oyuncu/ayril`, JSON.stringify({ game_session_id: session, player_id: playerId }))
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  }, [session])
+
+  useEffect(() => {
     const off1 = on('PLAYER_JOINED', (e) => {
       setPlayers(prev => {
         if (prev.find(p => p.id === e.player_id)) return prev

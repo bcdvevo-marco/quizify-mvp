@@ -18,18 +18,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   const { data: answers } = await supabase
     .from('player_answers')
-    .select('option_id')
+    .select('option_id, player_id, points_earned')
     .eq('question_id', question_id)
 
   const stats: Record<string, number> = {}
+  const playerPoints: Record<string, number> = {}
   answers?.forEach(a => {
     if (a.option_id) stats[a.option_id] = (stats[a.option_id] ?? 0) + 1
+    playerPoints[a.player_id] = a.points_earned
   })
 
   await broadcastGameEvent(id, {
     type: 'QUESTION_END',
     correct_option_id: correctOption?.id ?? '',
     answer_stats: Object.entries(stats).map(([option_id, count]) => ({ option_id, count })),
+    player_points: playerPoints,
   })
 
   const { data: sess } = await supabase

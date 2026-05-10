@@ -48,6 +48,7 @@ export interface QuestionEndEvent {
   type: 'QUESTION_END'
   correct_option_id: string
   answer_stats: { option_id: string; count: number }[]
+  player_points?: Record<string, number>
   your_points?: number
 }
 

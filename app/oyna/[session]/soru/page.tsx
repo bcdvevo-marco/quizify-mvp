@@ -19,6 +19,16 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
   const { on } = useGameChannel(session)
 
   useEffect(() => {
+    const playerId = sessionStorage.getItem('player_id')
+    if (!playerId) return
+    const handleUnload = () => {
+      navigator.sendBeacon(`/api/oyuncu/ayril`, JSON.stringify({ game_session_id: session, player_id: playerId }))
+    }
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  }, [session])
+
+  useEffect(() => {
     const off1 = on('QUESTION_START', (e) => {
       setQuestion(e)
       setAnswered(false)
@@ -31,8 +41,10 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
     })
     const off2 = on('QUESTION_END', (e) => {
       setCorrectOptionId(e.correct_option_id)
-      if (e.your_points !== undefined) {
-        setEarnedPoints(e.your_points)
+      const playerId = sessionStorage.getItem('player_id') ?? ''
+      const pts = e.player_points?.[playerId] ?? e.your_points
+      if (pts !== undefined) {
+        setEarnedPoints(pts)
         setShowFloatUp(true)
         setTimeout(() => setShowFloatUp(false), 1400)
       }
@@ -52,10 +64,25 @@ export default function QuestionPage({ params }: { params: Promise<{ session: st
       const elapsed = (Date.now() - startMs) / 1000
       const left = Math.max(0, question.time_limit - elapsed)
       setTimeLeft(left)
-      if (left <= 0) clearInterval(interval)
+      if (left <= 0) {
+        clearInterval(interval)
+        // Süre doldu — cevap vermediyse null submit
+        setAnswered(true)
+        const playerId = sessionStorage.getItem('player_id')
+        fetch(`/api/oyun/${session}/cevap`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            player_id: playerId,
+            question_id: question.question_id,
+            option_id: null,
+            answered_ms: question.time_limit * 1000,
+          }),
+        })
+      }
     }, 100)
     return () => clearInterval(interval)
-  }, [question, startMs, answered])
+  }, [question, startMs, answered, session])
 
   const handleAnswer = useCallback(async (optionId: string) => {
     if (answered || !question) return
