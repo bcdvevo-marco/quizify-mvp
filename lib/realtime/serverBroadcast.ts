@@ -2,7 +2,7 @@ import type { GameEvent } from '@/types/game'
 
 export async function broadcastGameEvent(sessionId: string, event: GameEvent): Promise<void> {
   const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/realtime/v1/api/broadcast`
-  await fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -11,10 +11,14 @@ export async function broadcastGameEvent(sessionId: string, event: GameEvent): P
     },
     body: JSON.stringify({
       messages: [{
-        topic: `realtime:game:${sessionId}`,
+        topic: `game:${sessionId}`,
         event: event.type,
         payload: event,
+        private: false,
       }],
     }),
   })
+  if (!res.ok) {
+    console.error('Broadcast failed', res.status, await res.text().catch(() => ''))
+  }
 }
