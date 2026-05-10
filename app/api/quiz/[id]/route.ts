@@ -32,7 +32,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   if (quizError) return NextResponse.json({ error: quizError.message }, { status: 500 })
 
   if (questions) {
-    await supabase.from('questions').delete().eq('quiz_id', id)
+    const { error: deleteError } = await supabase.from('questions').delete().eq('quiz_id', id)
+    if (deleteError) {
+      return NextResponse.json({ error: `Eski sorular silinemedi: ${deleteError.message}` }, { status: 500 })
+    }
     for (const q of questions) {
       const { data: question } = await supabase
         .from('questions')
