@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { broadcastGameEvent } from '@/lib/realtime/serverBroadcast'
 import { calculatePoints } from '@/lib/scoring/scoring'
+import { endQuestion } from '@/lib/game/endQuestion'
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -46,6 +47,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     answered: answeredCount ?? 0,
     total: totalPlayers ?? 0,
   })
+
+  if (totalPlayers && answeredCount && answeredCount >= totalPlayers) {
+    await endQuestion(supabase, id, question_id)
+  }
 
   return NextResponse.json({ points_earned: points })
 }
