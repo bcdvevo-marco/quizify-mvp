@@ -13,12 +13,19 @@ export default function NicknamePage({ params }: { params: Promise<{ pin: string
   const [selectedTeam, setSelectedTeam] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
+  const [joinError, setJoinError] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
     fetch(`/api/katil/${pin}`)
-      .then(r => r.json())
-      .then(data => { setSession(data); setFetching(false) })
+      .then(async r => {
+        const data = await r.json()
+        if (!r.ok) { setFetchError(data.error ?? 'Bir hata oluştu'); setFetching(false); return }
+        setSession(data)
+        setFetching(false)
+      })
+      .catch(() => { setFetchError('Bağlantı hatası'); setFetching(false) })
   }, [pin])
 
   async function handleJoin(e: React.FormEvent) {
@@ -31,8 +38,9 @@ export default function NicknamePage({ params }: { params: Promise<{ pin: string
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ game_session_id: session.id, nickname: nickname.trim(), team_id: selectedTeam }),
     })
-    const { player_id } = await res.json()
-    sessionStorage.setItem('player_id', player_id)
+    const data = await res.json()
+    if (!res.ok) { setJoinError(data.error ?? 'Katılım başarısız'); setLoading(false); return }
+    sessionStorage.setItem('player_id', data.player_id)
     sessionStorage.setItem('nickname', nickname.trim())
     router.push(`/oyna/${session.id}`)
   }
@@ -41,6 +49,29 @@ export default function NicknamePage({ params }: { params: Promise<{ pin: string
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(160deg, #7c3aed, #4338ca)' }}>
         <div className="text-white/60 text-sm animate-pulse">Yükleniyor...</div>
+      </div>
+    )
+  }
+
+  if (fetchError) {
+    const isStarted = fetchError === 'Oyun zaten başladı'
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-6 p-8"
+        style={{ background: 'linear-gradient(160deg, #7c3aed, #4338ca)' }}>
+        <div className="text-6xl">{isStarted ? '🏃' : '❌'}</div>
+        <div className="text-center">
+          <h1 className="text-white text-2xl font-black mb-2">{fetchError}</h1>
+          <p className="text-white/60 text-sm">
+            {isStarted ? 'Bu oyuna artık katılamazsın.' : 'PIN yanlış veya oyun sona ermiş.'}
+          </p>
+        </div>
+        <button
+          onClick={() => router.push('/katil')}
+          className="px-6 py-3 rounded-2xl font-bold text-indigo-700 active:scale-95"
+          style={{ background: 'white' }}
+        >
+          Farklı PIN Dene
+        </button>
       </div>
     )
   }
@@ -104,6 +135,8 @@ export default function NicknamePage({ params }: { params: Promise<{ pin: string
               </div>
             </div>
           )}
+
+          {joinError && <p className="text-red-300 text-sm text-center -mt-2">{joinError}</p>}
 
           <button
             type="submit"

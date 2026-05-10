@@ -1,7 +1,8 @@
 'use client'
 import { use, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Icon, Btn, AnswerShape, ANS_META } from '@/components/shared'
+import { Icon, Btn, AnswerShape, ANS_META, useToast } from '@/components/shared'
+import { ImageUploader } from '@/components/host/ImageUploader'
 
 interface Option { id?: string; text: string; is_correct: boolean; position: number }
 interface Question {
@@ -36,6 +37,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   const [aiTopic, setAiTopic] = useState('')
   const [showAI, setShowAI] = useState(false)
   const router = useRouter()
+  const toast = useToast()
 
   useEffect(() => {
     if (id === 'yeni') return
@@ -83,7 +85,7 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
   }
 
   async function handleSave() {
-    if (!title.trim()) { alert('Quiz başlığı gerekli'); return }
+    if (!title.trim()) { toast.show('Quiz başlığı gerekli', 'error'); return }
     setSaving(true)
 
     const method = id === 'yeni' ? 'POST' : 'PUT'
@@ -99,9 +101,11 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
     })
 
     if (res.ok) {
+      toast.show('Quiz kaydedildi', 'success')
       router.push('/dashboard')
     } else {
-      alert('Kaydetme hatası')
+      const data = await res.json().catch(() => ({}))
+      toast.show(data.error ?? 'Kaydetme hatası', 'error')
     }
     setSaving(false)
   }
@@ -209,14 +213,15 @@ export default function EditorPage({ params }: { params: Promise<{ id: string }>
                 />
               </div>
 
-              {/* Image upload placeholder */}
-              <div
-                className="w-full h-32 rounded-2xl flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                style={{ border: '2px dashed #e2e8f0', color: '#94a3b8' }}
-              >
-                <Icon name="image" size={20} />
-                <span className="text-sm font-medium">Görsel ekle (isteğe bağlı)</span>
-              </div>
+              {/* Image upload */}
+              <ImageUploader
+                value={activeQ.image_url}
+                onChange={url =>
+                  setQuestions(prev =>
+                    prev.map((q, i) => i === activeIdx ? { ...q, image_url: url } : q)
+                  )
+                }
+              />
 
               {/* Options */}
               <div>

@@ -163,6 +163,10 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
           {question && (
             <>
               <div className="qf-glass-strong rounded-2xl p-6">
+                {question.image_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={question.image_url} alt="" className="w-full max-h-48 object-cover rounded-xl mb-4" />
+                )}
                 <p className="text-white text-2xl font-bold">{question.text}</p>
               </div>
 
@@ -195,7 +199,7 @@ export default function KontrolPage({ params }: { params: Promise<{ id: string }
               <div className="flex items-center gap-3 mt-auto">
                 {!questionEnded ? (
                   <>
-                    <Btn kind="danger" size="md" onClick={handleEndGame} icon="x">
+                    <Btn kind="danger" size="md" onClick={() => handleEndGame()} icon="x">
                       Oyunu Bitir
                     </Btn>
                     <Btn kind="outline" size="md" onClick={handleEndQuestion} icon="check">

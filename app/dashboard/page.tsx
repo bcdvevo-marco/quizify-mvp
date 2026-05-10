@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { QuizifyLockup, Icon, Btn, Avatar } from '@/components/shared'
+import { QuizifyLockup, Icon, Btn, Avatar, useToast } from '@/components/shared'
 import Link from 'next/link'
 
 interface Quiz {
@@ -26,8 +26,10 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [filter, setFilter] = useState('Tümü')
   const [loading, setLoading] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const router = useRouter()
   const supabase = createClient()
+  const toast = useToast()
 
   useEffect(() => {
     async function load() {
@@ -68,18 +70,20 @@ export default function DashboardPage() {
       body: JSON.stringify({ quiz_id: quizId }),
     })
     const data = await res.json()
-    if (!res.ok) { alert(data.error); return }
+    if (!res.ok) { toast.show(data.error ?? 'Oyun başlatılamadı', 'error'); return }
     router.push(`/oyun/${data.id}/lobi`)
   }
 
   async function handleTogglePublish(quiz: Quiz) {
     const newStatus = quiz.status === 'published' ? 'draft' : 'published'
-    await fetch(`/api/quiz/${quiz.id}`, {
+    const res = await fetch(`/api/quiz/${quiz.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: newStatus }),
     })
+    if (!res.ok) { toast.show('Durum güncellenemedi', 'error'); return }
     setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, status: newStatus } : q))
+    toast.show(newStatus === 'published' ? 'Quiz yayına alındı' : 'Taslağa çekildi', 'success')
   }
 
   const filtered = quizzes.filter(q => {
@@ -97,10 +101,22 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex bg-slate-50">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-20 bg-black/40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className="w-60 flex-none flex flex-col"
-        style={{ background: 'white', borderRight: '1px solid var(--slate-200)' }}
+        className={`fixed lg:static inset-y-0 left-0 z-30 w-60 flex-none flex flex-col ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}
+        style={{
+          background: 'white',
+          borderRight: '1px solid var(--slate-200)',
+          transition: 'transform 0.25s ease',
+        }}
       >
         <div className="px-5 py-6">
           <QuizifyLockup size={32} />
@@ -155,19 +171,29 @@ export default function DashboardPage() {
       {/* Main */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-200 bg-white">
-          <div>
-            <h1 className="text-2xl font-black text-slate-900">Quizlerim</h1>
-            <p className="text-slate-500 text-sm">{quizzes.length} quiz</p>
+        <div className="flex items-center justify-between px-4 lg:px-8 py-4 lg:py-6 border-b border-slate-200 bg-white">
+          <div className="flex items-center gap-3">
+            <button
+              className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors"
+              onClick={() => setSidebarOpen(o => !o)}
+              aria-label="Menüyü aç"
+            >
+              <Icon name="menu" size={20} />
+            </button>
+            <div>
+              <h1 className="text-xl lg:text-2xl font-black text-slate-900">Quizlerim</h1>
+              <p className="text-slate-500 text-sm">{quizzes.length} quiz</p>
+            </div>
           </div>
           <Btn icon="plus" size="md" onClick={() => router.push('/quiz/yeni')}>
-            Yeni Quiz
+            <span className="hidden sm:inline">Yeni Quiz</span>
+            <span className="sm:hidden">Yeni</span>
           </Btn>
         </div>
 
-        <div className="flex-1 p-8">
+        <div className="flex-1 p-4 lg:p-8">
           {/* Stats */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4 mb-6 lg:mb-8">
             {stats.map(s => (
               <div key={s.label} className="bg-white rounded-2xl p-5" style={{ boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
                 <p className="text-2xl font-black text-slate-900">{s.value}</p>
@@ -196,7 +222,7 @@ export default function DashboardPage() {
 
           {/* Quiz grid */}
           {loading ? (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {[1, 2, 3].map(i => (
                 <div key={i} className="qf-skeleton h-44 rounded-2xl" />
               ))}
@@ -209,7 +235,7 @@ export default function DashboardPage() {
               </Btn>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {filtered.map(quiz => (
                 <div
                   key={quiz.id}

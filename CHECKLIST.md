@@ -110,33 +110,35 @@
 
 ---
 
-## FAZ 4 — Polish + Edge Cases ❌
+## FAZ 4 — Polish + Edge Cases ✅
 
 ### UX & Loading States
-- [ ] Global error boundary (`app/error.tsx`)
-- [ ] 404 sayfası (`app/not-found.tsx`)
-- [ ] Toast / snackbar notification sistemi
-- [ ] Form validation hata mesajları (editör ⚠️)
+- [x] Global error boundary (`app/error.tsx`)
+- [x] 404 sayfası (`app/not-found.tsx`)
+- [x] Toast / snackbar notification sistemi (`ToastProvider` + `useToast` hook)
+- [x] Form validation hata mesajları — `joinError` katıl ekranında, editor `alert` → toast
 
 ### Edge Cases
-- [ ] Oyun aktifken host sayfayı yenilerse → kontrol sayfasına redirect
-- [ ] Oyuncu sayfayı yenilerse → sessionStorage kaybolur, yeniden katılım akışı
-- [ ] PIN süresi dolmuş/kullanılmış → hata ekranı
-- [ ] Oyun başlamışken lobi PIN'i girme → "Oyun başladı" uyarısı (API ✅, UI ⚠️)
-- [ ] Supabase bağlantı hatası → offline banner
-- [ ] Channel reconnect otomatik
-- [ ] Host tarafı timer → süre dolunca `soru-bitir` otomatik tetikleme
-- [ ] Son soru sonrası "Oyunu Bitir" otomatik prompt
-- [ ] Oyuncu yeniden katılım akışı (sessionStorage kaybı)
+- [x] Oyun aktifken host sayfayı yenilerse → kontrol sayfasına redirect
+- [x] Oyuncu sayfayı yenilerse → sessionStorage kaybolur, `/katil`'e yönlendirme
+- [x] PIN süresi dolmuş/kullanılmış → hata ekranı (`fetchError` screen)
+- [x] Oyun başlamışken lobi PIN'i girme → "Oyun başladı" uyarısı (API ✅, UI ✅)
+- [x] Supabase bağlantı hatası → offline banner (`OfflineBanner` window event listener)
+- [x] Channel reconnect otomatik (3s retry)
+- [x] Host tarafı timer → süre dolunca `soru-bitir` otomatik tetikleme (`autoEndedRef`)
+- [x] Son soru sonrası "Oyunu Bitir" otomatik prompt
+- [x] Oyuncu yeniden katılım akışı (sessionStorage kaybı → `/katil` redirect)
 
 ### Görsel Upload
-- [ ] Supabase Storage bucket `quiz-images` oluşturuldu
-- [ ] `components/host/ImageUploader.tsx` — drag-drop + preview
-- [ ] Editördeki placeholder gerçek upload ile değiştirildi
+- [x] Supabase Storage bucket `quiz-images` oluşturuldu (5MB limit, public read)
+- [x] `components/host/ImageUploader.tsx` — drag-drop + preview + kaldır
+- [x] Editördeki placeholder gerçek upload ile değiştirildi
+- [x] Host kontrol sayfasında soru görseli gösterimi
 
 ### Mobil
-- [ ] Dashboard sidebar mobilde çalışıyor mu?
-- [ ] `aria-label` eksik öğeler
+- [x] Dashboard sidebar mobilde hamburger menü + overlay drawer
+- [x] Stats grid 2-kolon, quiz kart grid responsive
+- [x] `aria-label` — hamburger butona eklendi
 
 ---
 
@@ -166,5 +168,5 @@
 | Faz 1 — Auth + Quiz CRUD | ✅ | Tamamlandı (görsel upload + drag-drop Faz 4'te) |
 | Faz 2 — Live Game Skeleton | ✅ | Tamamlandı |
 | Faz 3 — Question Lifecycle | ✅ | Tamamlandı |
-| Faz 4 — Polish + Edge Cases | ❌ | Başlanmadı |
+| Faz 4 — Polish + Edge Cases | ✅ | Tamamlandı |
 | Faz 5 — Deploy | ❌ | Başlanmadı |

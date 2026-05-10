@@ -53,11 +53,13 @@ export default function LobiPage({ params }: { params: Promise<{ id: string }> }
     fetch(`/api/oyun/${id}`)
       .then(r => r.json())
       .then((data: SessionInfo) => {
+        if (data.status === 'active') { router.replace(`/oyun/${id}/kontrol`); return }
+        if (data.status === 'ended') { router.replace('/dashboard'); return }
         setSession(data)
         if (data.players?.length) setPlayers(data.players)
       })
       .catch(() => {})
-  }, [id])
+  }, [id, router])
 
   useEffect(() => {
     const off = on('PLAYER_JOINED', (e) => {

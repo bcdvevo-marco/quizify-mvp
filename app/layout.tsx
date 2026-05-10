@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Plus_Jakarta_Sans } from 'next/font/google'
+import { ToastProvider, OfflineBanner } from '@/components/shared'
 import './globals.css'
 
 const jakarta = Plus_Jakarta_Sans({
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${jakarta.variable} h-full`}>
       <body className="min-h-full antialiased" style={{ fontFamily: 'var(--font-jakarta, var(--font-body))' }}>
-        {children}
+        <ToastProvider>
+          <OfflineBanner />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   )
