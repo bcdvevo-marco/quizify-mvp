@@ -15,7 +15,7 @@
 - [x] `types/game.ts` — Realtime event tipleri
 - [x] `middleware.ts` — `/dashboard`, `/quiz`, `/oyun` rotaları auth koruması altında
 - [x] `.env.example` oluşturuldu
-- [ ] **`.env.local` oluşturuldu ve dolduruldu** ← Supabase + Anthropic key'leri
+- [x] `.env.local` şablonu oluşturuldu (değerler doldurulacak ← Supabase + Anthropic key'leri)
 
 ### Supabase Projesi
 - [ ] **Supabase dashboard'da proje oluşturuldu**
@@ -25,11 +25,11 @@
 - [ ] Realtime → `game_sessions` ve `players` tabloları publication'a eklendi (migration'da var, doğrulama gerekli)
 
 ### Test Altyapısı
-- [ ] **`vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react` kuruldu**
-- [ ] **`vitest.config.ts` oluşturuldu**
-- [ ] **`vitest.setup.ts` oluşturuldu**
-- [ ] **`package.json`'a `"test"` ve `"test:run"` scriptleri eklendi**
-- [ ] **`__tests__/lib/scoring.test.ts` — 5 unit test yazıldı ve geçiyor**
+- [x] `vitest`, `@vitejs/plugin-react`, `jsdom`, `@testing-library/react` kuruldu
+- [x] `vitest.config.ts` oluşturuldu (jsdom, globals: true, @/* alias)
+- [x] `vitest.setup.ts` oluşturuldu (@testing-library/jest-dom)
+- [x] `package.json`'a `"test"` ve `"test:run"` scriptleri eklendi
+- [x] `__tests__/lib/scoring.test.ts` — 8 unit test yazıldı ve geçiyor (`npm run test:run`)
 
 ---
 
