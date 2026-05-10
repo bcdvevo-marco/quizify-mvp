@@ -51,9 +51,9 @@
 - [x] `POST /api/quiz/ai-uret` — Claude `claude-sonnet-4-6` ile Türkçe soru üretimi
 - [x] Quiz yayınlama/taslağa çekme toggle'ı (dashboard kart + API)
 - [x] En az 1 soru + her soruda 1 doğru şık olmadan oyun başlatılamaz (`POST /api/oyun` guard)
-- [ ] Görsel yükleme — Supabase Storage (Faz 4'e taşındı)
-- [ ] Soru sürükleme sırası — drag-and-drop (Faz 4'e taşındı)
-- [ ] Kaydetmeden çıkma uyarısı (`useBeforeUnload`) — Faz 4'e taşındı
+- [x] Görsel yükleme — Supabase Storage (Faz 4'te tamamlandı, `ImageUploader`)
+- [ ] Soru sürükleme sırası — drag-and-drop (post-MVP)
+- [ ] Kaydetmeden çıkma uyarısı (`useBeforeUnload`) (post-MVP)
 
 ---
 
@@ -165,8 +165,33 @@
 | Faz | Durum | Not |
 |-----|-------|-----|
 | Faz 0 — Setup | ✅ | Tamamlandı |
-| Faz 1 — Auth + Quiz CRUD | ✅ | Tamamlandı (görsel upload + drag-drop Faz 4'te) |
+| Faz 1 — Auth + Quiz CRUD | ✅ | Tamamlandı (drag-drop & `useBeforeUnload` post-MVP) |
 | Faz 2 — Live Game Skeleton | ✅ | Tamamlandı |
 | Faz 3 — Question Lifecycle | ✅ | Tamamlandı |
 | Faz 4 — Polish + Edge Cases | ✅ | Tamamlandı |
 | Faz 5 — Deploy | ❌ | Başlanmadı |
+
+---
+
+## Post-MVP (Faz 6+)
+
+### Editör İyileştirmeleri
+- [ ] Soru sürükleme sırası — drag-and-drop (`@dnd-kit/core`)
+- [ ] Kaydetmeden çıkma uyarısı — `beforeunload` listener
+- [ ] Soru kopyala/çoğalt butonu
+
+### Oyun Akışı
+- [ ] Hazır quiz şablonları kütüphanesi
+- [ ] Multimedya: video/ses ekleme
+- [ ] Çoktan seçmeli + true/false + open-ended soru tipleri
+- [ ] Takım oyunu özel skor stratejileri (toplam, ortalama, en yüksek)
+
+### Analitik
+- [ ] Quiz başına performans istatistikleri (en zor soru, ortalama skor)
+- [ ] Geçmiş oyunlar listesi + tekrar oynat
+- [ ] Oyuncu profil ekranı (kendi geçmişi)
+
+### Sosyal
+- [ ] Quiz paylaşma (link, sosyal medya)
+- [ ] Topluluk quiz galerisi
+- [ ] Yorum + beğeni sistemi
