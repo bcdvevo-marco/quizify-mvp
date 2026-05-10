@@ -67,8 +67,19 @@ export default function DashboardPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ quiz_id: quizId }),
     })
-    const { id } = await res.json()
-    router.push(`/oyun/${id}/lobi`)
+    const data = await res.json()
+    if (!res.ok) { alert(data.error); return }
+    router.push(`/oyun/${data.id}/lobi`)
+  }
+
+  async function handleTogglePublish(quiz: Quiz) {
+    const newStatus = quiz.status === 'published' ? 'draft' : 'published'
+    await fetch(`/api/quiz/${quiz.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    })
+    setQuizzes(prev => prev.map(q => q.id === quiz.id ? { ...q, status: newStatus } : q))
   }
 
   const filtered = quizzes.filter(q => {
@@ -231,6 +242,17 @@ export default function DashboardPage() {
                     <Btn kind="primary" size="sm" icon="play" full onClick={() => handleStartGame(quiz.id)}>
                       Başlat
                     </Btn>
+                    <button
+                      onClick={() => handleTogglePublish(quiz)}
+                      title={quiz.status === 'published' ? 'Taslağa çek' : 'Yayınla'}
+                      className="p-2 rounded-xl transition-colors"
+                      style={{
+                        color: quiz.status === 'published' ? '#047857' : '#94a3b8',
+                        background: quiz.status === 'published' ? '#d1fae5' : 'transparent',
+                      }}
+                    >
+                      <Icon name={quiz.status === 'published' ? 'eye' : 'eye-off'} size={16} />
+                    </button>
                     <button
                       onClick={() => router.push(`/quiz/${quiz.id}/duzenle`)}
                       className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"

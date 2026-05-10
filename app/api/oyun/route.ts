@@ -9,6 +9,19 @@ export async function POST(request: NextRequest) {
 
   const { quiz_id, allow_anonymous = true } = await request.json()
 
+  const { data: questions } = await supabase
+    .from('questions')
+    .select('id, options(id, is_correct)')
+    .eq('quiz_id', quiz_id)
+
+  if (!questions || questions.length === 0)
+    return NextResponse.json({ error: 'Quizde en az 1 soru olmalı' }, { status: 422 })
+
+  const missingCorrect = (questions as Array<{ id: string; options: Array<{ is_correct: boolean }> }>)
+    .some(q => !q.options?.some(o => o.is_correct))
+  if (missingCorrect)
+    return NextResponse.json({ error: 'Her sorunun en az 1 doğru şıkkı olmalı' }, { status: 422 })
+
   await supabase
     .from('game_sessions')
     .update({ status: 'ended', ended_at: new Date().toISOString() })

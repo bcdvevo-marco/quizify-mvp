@@ -6,6 +6,7 @@ type IconName =
   | 'sparkle' | 'clock' | 'users' | 'qr' | 'download' | 'crown' | 'copy'
   | 'share' | 'chevron-r' | 'chevron-l' | 'chevron-d' | 'logout' | 'settings'
   | 'search' | 'menu' | 'image' | 'drag' | 'star' | 'trophy' | 'chart-bar'
+  | 'eye' | 'eye-off'
 
 interface IconProps {
   name: IconName
@@ -44,6 +45,8 @@ const paths: Record<IconName, string | string[]> = {
   'star':       'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z',
   'trophy':     ['M6 9H3V2h18v7h-3', 'M6 9a6 6 0 0 0 12 0', 'M12 15v4', 'M8 19h8'],
   'chart-bar':  ['M18 20V10', 'M12 20V4', 'M6 20v-6'],
+  'eye':        ['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
+  'eye-off':    ['M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94', 'M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19', 'M1 1l22 22'],
 }
 
 export function Icon({ name, size = 20, color = 'currentColor', strokeWidth = 2, className = '' }: IconProps) {
